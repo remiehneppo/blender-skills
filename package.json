@@ -1,0 +1,8 @@
+{
+  "name": "blender-skills",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Claude agent skills for Blender headless automation — 3D modeling, rendering, compositing, and image editing",
+  "keywords": ["blender", "3d", "rendering", "compositing", "agent-skills", "claude"],
+  "license": "MIT"
+}

@@ -1,0 +1,101 @@
+{
+  "name": "blender-skills",
+  "owner": {
+    "name": "tieubaoca",
+    "email": ""
+  },
+  "metadata": {
+    "description": "Claude agent skills for Blender headless automation — 3D modeling, mesh repair, export, rendering, compositing, and image editing",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "blender-headless",
+      "source": "./",
+      "description": "Set up and run Blender in headless/background mode from Python scripts. Use when writing any Blender automation script, needing CLI invocation patterns, parsing sys.argv, bootstrapping a factory scene, or understanding bpy namespace basics (bpy.data, bpy.ops, bpy.context, bpy.app.handlers).",
+      "version": "0.1.0",
+      "author": { "name": "tieubaoca" },
+      "category": "3d",
+      "keywords": ["blender", "headless", "background", "bpy", "automation", "cli", "python"],
+      "strict": false,
+      "skills": ["./skills/blender-headless"]
+    },
+    {
+      "name": "blender-mesh-modeling",
+      "source": "./",
+      "description": "Create and edit 3D meshes programmatically in Blender using from_pydata and BMesh APIs. Use when generating procedural geometry, editing topology without a GUI, extruding faces, translating vertices, or building mesh datablocks from Python data.",
+      "version": "0.1.0",
+      "author": { "name": "tieubaoca" },
+      "category": "3d",
+      "keywords": ["blender", "mesh", "bmesh", "geometry", "from_pydata", "extrude", "modeling"],
+      "strict": false,
+      "skills": ["./skills/blender-mesh-modeling"]
+    },
+    {
+      "name": "blender-modifiers",
+      "source": "./",
+      "description": "Add and configure non-destructive Blender modifiers (Boolean, Remesh, Decimate, Solidify) and bake the modifier stack to a final mesh via depsgraph. Use when applying boolean operations, voxel remeshing, polygon reduction, or shell thickness without destructive edits.",
+      "version": "0.1.0",
+      "author": { "name": "tieubaoca" },
+      "category": "3d",
+      "keywords": ["blender", "modifier", "boolean", "remesh", "decimate", "solidify", "depsgraph"],
+      "strict": false,
+      "skills": ["./skills/blender-modifiers"]
+    },
+    {
+      "name": "blender-mesh-repair",
+      "source": "./",
+      "description": "Repair 3D meshes for watertight/manifold geometry using Blender's BMesh API. Use when fixing non-manifold geometry, welding duplicate vertices, filling open holes, recalculating normals, or validating a mesh before 3D-print export.",
+      "version": "0.1.0",
+      "author": { "name": "tieubaoca" },
+      "category": "3d",
+      "keywords": ["blender", "mesh-repair", "watertight", "manifold", "3d-printing", "bmesh", "holes-fill"],
+      "strict": false,
+      "skills": ["./skills/blender-mesh-repair"]
+    },
+    {
+      "name": "blender-3d-export",
+      "source": "./",
+      "description": "Export Blender meshes to STL, OBJ, 3MF, or AMF with version-safe operator calls. Use when exporting 3D models for printing or interchange, handling Blender 3.x/4.x API differences, batch-exporting selected objects, or writing add-on-dependent export fallbacks.",
+      "version": "0.1.0",
+      "author": { "name": "tieubaoca" },
+      "category": "3d",
+      "keywords": ["blender", "export", "stl", "obj", "3mf", "amf", "3d-printing", "batch"],
+      "strict": false,
+      "skills": ["./skills/blender-3d-export"]
+    },
+    {
+      "name": "blender-rendering",
+      "source": "./",
+      "description": "Set up cameras, lights, and render a Blender scene to PNG/JPEG/EXR from a headless script. Use when rendering stills or animations, configuring EEVEE or Cycles engines, adjusting resolution and output format, or scripting multi-angle batch renders.",
+      "version": "0.1.0",
+      "author": { "name": "tieubaoca" },
+      "category": "rendering",
+      "keywords": ["blender", "render", "camera", "lighting", "eevee", "cycles", "png", "headless"],
+      "strict": false,
+      "skills": ["./skills/blender-rendering"]
+    },
+    {
+      "name": "blender-compositing",
+      "source": "./",
+      "description": "Build Blender compositor node trees for post-processing effects (blur, rotate, translate, scale, alpha-over) and file output. Use when applying post-render effects, compositing overlays, saving via file-output nodes, or handling version differences in compositor node APIs.",
+      "version": "0.1.0",
+      "author": { "name": "tieubaoca" },
+      "category": "rendering",
+      "keywords": ["blender", "compositor", "nodes", "post-processing", "blur", "alpha-over", "file-output"],
+      "strict": false,
+      "skills": ["./skills/blender-compositing"]
+    },
+    {
+      "name": "blender-image-editing",
+      "source": "./",
+      "description": "Load, create, resize, pixel-edit, and save images via Blender's image datablock API without rendering a 3D scene. Use when batch-processing image files, manipulating pixel buffers, resizing textures, saving with format settings, or chaining render-complete handlers for multi-shot sequences.",
+      "version": "0.1.0",
+      "author": { "name": "tieubaoca" },
+      "category": "image",
+      "keywords": ["blender", "image", "pixels", "texture", "resize", "batch", "bpy.data.images"],
+      "strict": false,
+      "skills": ["./skills/blender-image-editing"]
+    }
+  ]
+}
