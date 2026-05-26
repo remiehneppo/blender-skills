@@ -10,8 +10,14 @@ description: >
   See ../_shared/compat-matrix.md for the full version-compat table.
 compatibility: "Blender 2.93+. wm.obj_export / wm.stl_export added in 4.0; legacy operators used as fallback. 3MF requires io_scene_3mf add-on. AMF operator names vary by build."
 license: MIT
-allowed-tools: Bash
+allowed-tools: Bash, mcp__blender__*
 ---
+
+## Preferred MCP Workflow
+
+Use `scene_export` for OBJ, STL, GLB/glTF, FBX and USD artifacts from an MCP
+job. `3MF` remains conditional on an installed Blender extension. Use the
+operator probes below only for standalone scripts or unsupported custom needs.
 
 ## Probe pattern (always use: current first, legacy fallback)
 

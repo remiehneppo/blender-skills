@@ -12,8 +12,14 @@ description: >
   See ../_shared/compat-matrix.md for compositor version-compat details.
 compatibility: "Blender 2.93+. CompositorNodeOutputFile.base_path renamed to .directory in some builds; use hasattr guard."
 license: MIT
-allowed-tools: Bash
+allowed-tools: Bash, mcp__blender__*
 ---
+
+## Preferred MCP Workflow
+
+For supported render artifact effects, use MCP `compositor_apply`; for exact
+scene selection call `render_object_mask` first. The node examples below are
+for bespoke compositor graphs outside the typed server interface.
 
 ## Enable compositor
 

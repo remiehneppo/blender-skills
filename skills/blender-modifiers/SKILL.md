@@ -11,8 +11,14 @@ description: >
   modifier-applied geometry without destructively applying the modifier stack.
 compatibility: "Blender 2.93+. RemeshModifier.voxel_size and BooleanModifier.solver require hasattr guards for pre-3.0 builds."
 license: MIT
-allowed-tools: Bash
+allowed-tools: Bash, mcp__blender__*
 ---
+
+## Preferred MCP Workflow
+
+Use the MCP `mesh_modify` tool for Boolean, Remesh, Decimate and Solidify
+operations in versioned jobs. Use `mesh_repair` before `scene_export` where
+the resulting mesh must be printable or exchange-ready.
 
 ## Add a modifier
 

@@ -12,8 +12,15 @@ description: >
   For compositor-based post-processing, see blender-compositing.
 compatibility: "Blender 2.93+. Image.save() and Image.pixels API stable across 2.93–4.x."
 license: MIT
-allowed-tools: Bash
+allowed-tools: Bash, mcp__blender__*
 ---
+
+## Preferred MCP Workflow
+
+For external-image object edits, use `image_segment` and then
+`image_edit_by_mask` with one returned `instance_id`; these edits use Pillow
+without launching Blender. Use the `bpy.data.images` patterns below for custom
+pixel operations that are not covered by typed MCP actions.
 
 ## Load an existing image
 

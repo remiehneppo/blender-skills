@@ -11,8 +11,15 @@ description: >
   For repair (remove_doubles, holes_fill), see blender-mesh-repair.
 compatibility: "Requires Blender 2.93+ with bmesh module (included). BMesh API stable across 2.93–4.x."
 license: MIT
-allowed-tools: Bash
+allowed-tools: Bash, mcp__blender__*
 ---
+
+## Preferred MCP Workflow
+
+When the Blender MCP server is available, use `mesh_create` for primitives or
+vertices/faces, then `job_inspect` to confirm named objects. The Python
+patterns below remain useful for bespoke scripts or explicitly approved
+`blender_run_python` work.
 
 ## Create mesh from Python data
 

@@ -9,8 +9,14 @@ description: >
   from_pydata construction, or whenever non-manifold or degenerate geometry is suspected.
 compatibility: "Blender 2.93+. bmesh.ops.recalc_face_normals requires hasattr guard on some 2.x builds."
 license: MIT
-allowed-tools: Bash
+allowed-tools: Bash, mcp__blender__*
 ---
+
+## Preferred MCP Workflow
+
+Use `mesh_repair` in an MCP job for validate, weld, hole fill, normal
+recalculation and triangulation. Each successful repair commits a new scene
+version; inspect and export from that committed version.
 
 ## When to repair
 

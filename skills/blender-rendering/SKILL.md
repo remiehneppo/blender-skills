@@ -11,8 +11,14 @@ description: >
   For compositor post-processing, see blender-compositing.
 compatibility: "Blender 2.93+. EEVEE available in both legacy (BLENDER_EEVEE) and Next (BLENDER_EEVEE_NEXT, 4.2+) engines."
 license: MIT
-allowed-tools: Bash
+allowed-tools: Bash, mcp__blender__*
 ---
+
+## Preferred MCP Workflow
+
+Use `camera_light_setup`, then `render_still` or `render_turntable` in a
+versioned MCP job. When isolating an object or material from a scene render,
+use `render_object_mask` (Cryptomatte), not external-image segmentation.
 
 ## Camera setup
 

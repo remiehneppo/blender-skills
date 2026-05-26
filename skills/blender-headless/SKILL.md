@@ -11,8 +11,15 @@ description: >
   CI pipelines, render farms, or batch automation.
 compatibility: "Requires Blender 2.93+ in PATH as `blender`. All patterns tested on 2.93–4.x."
 license: MIT
-allowed-tools: Bash
+allowed-tools: Bash, mcp__blender__*
 ---
+
+## Preferred MCP Workflow
+
+When `blender-mcp-server` is configured, start with `blender_healthcheck`,
+then use `job_create` and `job_inspect`. Prefer its typed tools and versioned
+scene artifacts over generating a standalone background script. Use raw Python
+only through `blender_run_python` after explicit opt-in and per-call approval.
 
 ## CLI invocation
 

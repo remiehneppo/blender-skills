@@ -10,6 +10,9 @@ Headless script version-compat reference. Use `hasattr()` or try/except for all 
 | OBJ import | `bpy.ops.wm.obj_import` | `bpy.ops.import_scene.obj` | Same pattern |
 | STL export | `bpy.ops.wm.stl_export` | `bpy.ops.export_mesh.stl` | Probe current first, fallback second |
 | STL import | `bpy.ops.wm.stl_import` | `bpy.ops.import_mesh.stl` | Same pattern |
+| glTF/GLB import/export | `bpy.ops.import_scene.gltf` / `bpy.ops.export_scene.gltf` | N/A | Core add-on available in Blender 4.5 LTS |
+| FBX import/export | `bpy.ops.import_scene.fbx` / `bpy.ops.export_scene.fbx` | N/A | Core add-on available in Blender 4.5 LTS |
+| USD import/export | `bpy.ops.wm.usd_import` / `bpy.ops.wm.usd_export` | N/A | Built into Blender 4.5 LTS |
 | 3MF export | `bpy.ops.export_mesh.threemf` | N/A | Add-on/extension required; load with `--addons` |
 | AMF export | add-on defined — probe `bpy.ops.export_mesh.amf` then `bpy.ops.wm.amf_export` | N/A | Not in core; treat as optional |
 
@@ -65,6 +68,15 @@ if hasattr(fout, "base_path"):
 elif hasattr(fout, "directory"):
     fout.directory = outdir
 ```
+
+### Cryptomatte masks for known scenes
+
+For Blender renders where object or material identity is known, enable
+`view_layer.use_pass_cryptomatte_object` or
+`view_layer.use_pass_cryptomatte_material` and use
+`CompositorNodeCryptomatteV2`. In Blender 4.5, the node layer value includes
+the view layer prefix, for example `ViewLayer.CryptoObject`. This is more
+precise than running a detector on the finished render.
 
 ---
 
