@@ -26,19 +26,41 @@ weight explicitly; the server never downloads weights during a tool call.
 ```bash
 export BLENDER_BIN=/path/to/blender
 export BLENDER_MCP_WORKSPACE_ROOT=/path/to/input-workspace
+# Optional: set the output root; defaults to the current working directory.
 export BLENDER_MCP_OUTPUT_ROOT=/path/to/blender-artifacts
 export BLENDER_MCP_YOLO_MODEL=/path/to/yolo11n-seg.pt
+# Optional: enable Blender add-ons that your scenes or scripts rely on.
+export BLENDER_MCP_BLENDER_ADDONS=add_mesh_extra_objects
 # Optional: export BLENDER_MCP_YOLO_DEVICE=cpu
 blender-mcp
 ```
 
 `BLENDER_MCP_WORKSPACE_ROOT` is the only accepted source for input assets.
-`BLENDER_MCP_OUTPUT_ROOT` is the only location the server writes jobs, scene
-versions, logs and artifacts.
+By default the server writes jobs, scene versions, logs and artifacts to the
+current working directory. Set `BLENDER_MCP_OUTPUT_ROOT` to override that
+location.
 
 Set `BLENDER_MCP_ENABLE_UNSAFE_PYTHON=1` only to register
 `blender_run_python`. That tool executes arbitrary code with the Blender
 process's permissions and clients should require approval for every call.
+
+### Gear scene note
+
+Blender's `add_mesh_extra_objects` gear primitive uses a fixed reference where a
+tooth points along `+Y` at zero spin. For planetary assemblies, keep the ring
+fixed, drive the sun, and build each planet as `carrier -> arm -> planet` so
+the orbit and tooth phase stay separate. Use the reference orientation offset
+`90° - 180°/teeth` for external gear phase when the mesh needs to line up with
+a mating gear.
+For concentric same-plane assemblies, put the inner and outer rings on the same
+`Z` plane and drive their carriers with opposite sign if the design needs
+counter-rotation.
+After any scene edit, render a preview image and review it once before marking
+the change done.
+Do not reuse near-identical orbit radii for adjacent same-plane gear rings; the
+planet envelopes need visible radial separation or they will overlap.
+When editing models, always inspect the rendered preview for overlaps, wrong
+clearances, and non-meshing parts before you treat the result as finished.
 
 ## Selection Boundary
 

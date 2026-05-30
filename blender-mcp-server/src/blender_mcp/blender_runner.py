@@ -25,6 +25,13 @@ def _load(payload):
         bpy.ops.wm.read_factory_settings(use_empty=True)
 
 
+def _disable_backup_versions():
+    try:
+        bpy.context.preferences.filepaths.save_version = 0
+    except Exception:
+        pass
+
+
 def _object(name):
     obj = bpy.data.objects.get(name)
     if obj is None:
@@ -364,7 +371,9 @@ def main():
     payload_path, response_path = [Path(value) for value in sys.argv[sys.argv.index("--") + 1 :]]
     try:
         payload = json.loads(payload_path.read_text(encoding="utf-8"))
+        _disable_backup_versions()
         _load(payload)
+        _disable_backup_versions()
         action = payload["action"]
         if action == "inspect":
             result = _inspect()

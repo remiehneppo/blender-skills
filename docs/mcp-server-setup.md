@@ -34,14 +34,20 @@ export BLENDER_BIN=/absolute/path/to/blender
 export BLENDER_MCP_WORKSPACE_ROOT=/absolute/path/to/readable-inputs
 export BLENDER_MCP_OUTPUT_ROOT=/absolute/path/to/generated-artifacts
 export BLENDER_MCP_YOLO_MODEL=/absolute/path/to/yolo11n-seg.pt
+# Optional: comma-separated Blender add-ons to enable for every subprocess.
+export BLENDER_MCP_BLENDER_ADDONS=add_mesh_extra_objects
 # Optional Ultralytics device selector, for example cpu or 0:
 export BLENDER_MCP_YOLO_DEVICE=cpu
 ```
 
 Input scene, asset, texture and image paths must be inside
-`BLENDER_MCP_WORKSPACE_ROOT`. The server creates job manifests, logs,
-versioned `.blend` scenes, renders, exports and masks only below
-`BLENDER_MCP_OUTPUT_ROOT`.
+`BLENDER_MCP_WORKSPACE_ROOT`. The server creates job manifests, logs, versioned `.blend` scenes, renders,
+exports and masks in the current working directory by default. Set
+`BLENDER_MCP_OUTPUT_ROOT` to override that location.
+
+Scene workflow rule: after any model edit, render a preview image and review it
+before marking the task done. Check for object overlap, wrong spacing and
+parts that should mesh but do not.
 
 ## Client Configuration
 
@@ -59,6 +65,7 @@ BLENDER_BIN = "/absolute/path/to/blender"
 BLENDER_MCP_WORKSPACE_ROOT = "/absolute/path/to/inputs"
 BLENDER_MCP_OUTPUT_ROOT = "/absolute/path/to/outputs"
 BLENDER_MCP_YOLO_MODEL = "/absolute/path/to/yolo11n-seg.pt"
+BLENDER_MCP_BLENDER_ADDONS = "add_mesh_extra_objects"
 ```
 
 ### Claude Code
@@ -69,6 +76,7 @@ claude mcp add --transport stdio \
   --env BLENDER_MCP_WORKSPACE_ROOT=/absolute/path/to/inputs \
   --env BLENDER_MCP_OUTPUT_ROOT=/absolute/path/to/outputs \
   --env BLENDER_MCP_YOLO_MODEL=/absolute/path/to/yolo11n-seg.pt \
+  --env BLENDER_MCP_BLENDER_ADDONS=add_mesh_extra_objects \
   blender -- /absolute/path/blender-skills/blender-mcp-server/.venv/bin/blender-mcp
 ```
 
@@ -87,7 +95,8 @@ Create `.vscode/mcp.json`:
         "BLENDER_BIN": "/absolute/path/to/blender",
         "BLENDER_MCP_WORKSPACE_ROOT": "/absolute/path/to/inputs",
         "BLENDER_MCP_OUTPUT_ROOT": "/absolute/path/to/outputs",
-        "BLENDER_MCP_YOLO_MODEL": "/absolute/path/to/yolo11n-seg.pt"
+        "BLENDER_MCP_YOLO_MODEL": "/absolute/path/to/yolo11n-seg.pt",
+        "BLENDER_MCP_BLENDER_ADDONS": "add_mesh_extra_objects"
       }
     }
   }

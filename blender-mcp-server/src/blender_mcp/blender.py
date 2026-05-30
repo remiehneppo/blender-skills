@@ -22,9 +22,21 @@ class BlenderExecutor:
         self.store = store
         self.runner = Path(__file__).with_name("blender_runner.py")
 
+    def _blender_command(self, *extra: str) -> list[str]:
+        command = [
+            str(self.settings.blender_bin),
+            "--background",
+            "--factory-startup",
+        ]
+        if self.settings.blender_addons:
+            command.extend(["--addons", ",".join(self.settings.blender_addons)])
+        command.extend(extra)
+        return command
+
     def healthcheck(self) -> dict[str, Any]:
         response: dict[str, Any] = {
             "blender_bin": str(self.settings.blender_bin),
+            "blender_addons": list(self.settings.blender_addons),
             "blender_available": self.settings.blender_bin.is_file() and os.access(self.settings.blender_bin, os.X_OK),
             "output_root": str(self.store.paths.prepare_output_root()),
             "yolo_model": str(self.settings.yolo_model),
@@ -33,13 +45,7 @@ class BlenderExecutor:
         }
         if response["blender_available"]:
             try:
-                completed = subprocess.run(
-                    [str(self.settings.blender_bin), "--background", "--version"],
-                    capture_output=True,
-                    text=True,
-                    timeout=15,
-                    check=False,
-                )
+                completed = subprocess.run(self._blender_command("--version"), capture_output=True, text=True, timeout=15, check=False)
             except (OSError, subprocess.TimeoutExpired) as exc:
                 response["error"] = f"Unable to execute Blender healthcheck: {exc}"
                 return response
@@ -48,13 +54,7 @@ class BlenderExecutor:
             response["blender_compatible"] = bool(match and tuple(map(int, match.groups())) >= (4, 5))
             try:
                 runner = subprocess.run(
-                    [
-                        str(self.settings.blender_bin),
-                        "--background",
-                        "--factory-startup",
-                        "--python-expr",
-                        "import bpy; print('BLENDER_MCP_PYTHON_OK')",
-                    ],
+                    self._blender_command("--python-expr", "import bpy; print('BLENDER_MCP_PYTHON_OK')"),
                     capture_output=True,
                     text=True,
                     timeout=30,
@@ -87,7 +87,7 @@ class BlenderExecutor:
         candidate = self.store.candidate_scene(job_id) if mutate_scene else None
         directory = self.store.directory(job_id)
         log_path = directory / "logs" / f"{action}_{len(self.store.load(job_id)['operations']) + 1:04d}.log"
-        with tempfile.TemporaryDirectory(dir=directory) as temporary:
+        with tempfile.TemporaryDirectory() as temporary:
             payload_path = Path(temporary) / "payload.json"
             response_path = Path(temporary) / "response.json"
             payload_path.write_text(
@@ -103,16 +103,13 @@ class BlenderExecutor:
             )
             try:
                 completed = subprocess.run(
-                    [
-                        str(self.settings.blender_bin),
-                        "--background",
-                        "--factory-startup",
+                    self._blender_command(
                         "--python",
                         str(self.runner),
                         "--",
                         str(payload_path),
                         str(response_path),
-                    ],
+                    ),
                     capture_output=True,
                     text=True,
                     timeout=timeout or self.settings.default_timeout,
