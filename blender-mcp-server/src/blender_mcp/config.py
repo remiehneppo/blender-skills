@@ -73,9 +73,9 @@ class PathPolicy:
         self.output_root = settings.output_root.resolve()
 
     def prepare_output_root(self) -> Path:
-        self.output_root.mkdir(parents=True, exist_ok=True)
-        if not self.output_root.is_dir():
+        if self.output_root.exists() and not self.output_root.is_dir():
             raise PathValidationError(f"Output root is not a directory: {self.output_root}")
+        self.output_root.mkdir(parents=True, exist_ok=True)
         return self.output_root
 
     def input_file(self, value: str | Path, suffixes: set[str] | None = None) -> Path:
@@ -96,11 +96,16 @@ class PathPolicy:
         if not _within(path, self.output_root):
             raise PathValidationError(f"Output path is outside output root: {path}")
         if mkdir:
+            if path.exists() and not path.is_dir():
+                raise PathValidationError(f"Output path is not a directory: {path}")
             path.mkdir(parents=True, exist_ok=True)
         return path
 
     def existing_output_file(self, value: str | Path) -> Path:
-        path = Path(value).expanduser().resolve()
+        path = Path(value).expanduser()
+        if not path.is_absolute():
+            path = self.output_root / path
+        path = path.resolve()
         if not _within(path, self.output_root):
             raise PathValidationError(f"Artifact path is outside output root: {path}")
         if not path.is_file():

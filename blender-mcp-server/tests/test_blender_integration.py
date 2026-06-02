@@ -65,6 +65,12 @@ def test_blender_create_render_and_export(tmp_path: Path) -> None:
     stl = service.scene_export(job_id, "product.stl")
     glb = service.scene_export(job_id, "product.glb")
     usd = service.scene_export(job_id, "product.usdc")
+    inspect = service.job_inspect(job_id)
+    overlap = service.scene_check_overlap(job_id)
+    service.object_define_anchor(job_id, "Product", "CENTER", location=[0.0, 0.0, 0.0])
+    service.object_define_anchor(job_id, "Marker", "CENTER", location=[0.0, 0.0, 0.0])
+    mate = service.object_mate(job_id, "Marker", "CENTER", "Product", "CENTER")
+    fit = service.scene_verify_mechanical_fit(job_id)
 
     assert Path(render["output_path"]).is_file()
     assert Image.open(jpeg["output_path"]).format == "JPEG"
@@ -76,6 +82,11 @@ def test_blender_create_render_and_export(tmp_path: Path) -> None:
     assert Path(stl["output_path"]).is_file()
     assert Path(glb["output_path"]).is_file()
     assert Path(usd["output_path"]).is_file()
+    assert any(obj["name"] == "Product" and "dimensions" in obj and "bounding_box" in obj for obj in inspect["scene"]["objects"])
+    assert overlap["checked_objects"]
+    assert mate["mate"]["target_object_name"] == "Product"
+    assert fit["checked_objects"]
+    assert fit["pairs"]
     versions = len(service.store.load(job_id)["versions"])
     with pytest.raises(ValueError):
         service.render_still(job_id, "mismatch.jpg", format="PNG")

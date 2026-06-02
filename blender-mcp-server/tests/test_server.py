@@ -6,9 +6,11 @@ import os
 import sys
 import inspect
 
+import pytest
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from blender_mcp.config import Settings
+from blender_mcp.config import PathValidationError
 from blender_mcp.service import BlenderMCPService
 from blender_mcp.server import create_server
 
@@ -24,13 +26,27 @@ def test_mcp_surface_exposes_tools_resources_and_prompts(settings) -> None:
     resources = {str(item.uri) for item in asyncio.run(server.list_resources())}
     templates = {str(item.uriTemplate) for item in asyncio.run(server.list_resource_templates())}
 
-    assert {"blender_healthcheck", "job_create", "render_object_mask", "image_segment", "image_edit_by_mask"} <= tools
+    assert {
+        "blender_healthcheck",
+        "job_create",
+        "job_inspect",
+        "scene_check_overlap",
+        "mesh_create_gear",
+        "mesh_create_joint",
+        "object_define_anchor",
+        "object_mate",
+        "scene_verify_mechanical_fit",
+        "render_object_mask",
+        "image_segment",
+        "image_edit_by_mask",
+    } <= tools
     assert "blender_run_python" not in tools
     assert {
         "create_model_workflow",
         "product_render_workflow",
         "segment_edit_workflow",
         "cryptomatte_workflow",
+        "mechanical_assembly_workflow",
     } <= prompts
     assert "blender://capabilities" in resources
     assert "blender://jobs/{job_id}/manifest" in templates
@@ -48,6 +64,17 @@ def test_capabilities_resource_states_mask_boundary(settings) -> None:
     payload = json.loads(contents[0].content)
     assert payload["scene_identity_masks"] == "Cryptomatte Object/Material"
     assert payload["unsafe_python_enabled"] is False
+    assert "blender_run_python" not in payload["tools"]
+    assert "scene_check_overlap" in payload["tools"]
+    assert "blender://jobs/{job_id}/manifest" in payload["resources"]
+
+
+def test_capabilities_resource_includes_unsafe_tool_when_enabled(settings) -> None:
+    enabled = type(settings)(**{**settings.__dict__, "unsafe_python": True})
+    payload = json.loads(asyncio.run(create_server(enabled).read_resource("blender://capabilities"))[0].content)
+
+    assert payload["unsafe_python_enabled"] is True
+    assert "blender_run_python" in payload["tools"]
 
 
 def test_settings_parse_blender_addons_from_env(monkeypatch, tmp_path) -> None:
@@ -74,6 +101,21 @@ def test_healthcheck_reports_configured_addons(settings) -> None:
     payload = BlenderMCPService(configured).blender_healthcheck()
 
     assert payload["blender_addons"] == ["add_mesh_extra_objects"]
+
+
+def test_job_create_rejects_missing_source_without_creating_job(settings) -> None:
+    service = BlenderMCPService(settings)
+
+    with pytest.raises(PathValidationError):
+        service.job_create("missing.blend")
+    assert not (service.store.paths.output_root / "jobs").exists()
+
+
+def test_unsafe_python_requires_opt_in(settings) -> None:
+    service = BlenderMCPService(settings)
+
+    with pytest.raises(PermissionError):
+        service.blender_run_python("deadbeef", "print('nope')")
 
 
 def test_stdio_client_discovers_public_surface(settings) -> None:
@@ -103,5 +145,15 @@ def test_create_model_workflow_prompt_mentions_preview_review(settings) -> None:
     source = inspect.getsource(create_server)
 
     assert "render a preview after the scene edit" in source
-    assert "do not overlap incorrectly" in source
-    assert "mesh" in source
+    assert "define anchors before snapping assemblies" in source
+    assert "gears or other mating parts actually mesh" in source
+
+
+def test_mechanical_assembly_prompt_mentions_mates(settings) -> None:
+    source = inspect.getsource(create_server)
+
+    assert "object_mate" in source
+    assert "scene_verify_mechanical_fit" in source
+    assert "manifest" in source
+    assert "anchors" in source
+    assert "mates" in source

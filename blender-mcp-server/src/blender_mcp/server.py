@@ -10,7 +10,7 @@ from .config import Settings
 from .service import BlenderMCPService
 
 
-CAPABILITIES = {
+BASE_CAPABILITIES = {
     "baseline": "Blender 4.5 LTS+",
     "transport": "stdio",
     "scene_identity_masks": "Cryptomatte Object/Material",
@@ -19,27 +19,64 @@ CAPABILITIES = {
         "Masks inferred from arbitrary external images are not mapped to 3D scene objects "
         "without corresponding camera/scene data."
     ),
-    "tools": [
-        "blender_healthcheck",
-        "job_create",
-        "job_inspect",
-        "scene_import",
-        "object_transform",
-        "object_delete",
-        "material_create_assign",
-        "camera_light_setup",
-        "mesh_create",
-        "mesh_modify",
-        "mesh_repair",
-        "scene_export",
-        "render_still",
-        "render_turntable",
-        "render_object_mask",
-        "compositor_apply",
-        "image_segment",
-        "image_edit_by_mask",
-    ],
 }
+
+
+PUBLIC_TOOLS = [
+    "blender_healthcheck",
+    "job_create",
+    "job_inspect",
+    "scene_check_overlap",
+    "scene_import",
+    "object_transform",
+    "object_delete",
+    "object_define_anchor",
+    "object_mate",
+    "material_create_assign",
+    "camera_light_setup",
+    "mesh_create",
+    "mesh_create_gear",
+    "mesh_create_joint",
+    "mesh_modify",
+    "mesh_repair",
+    "scene_export",
+    "render_still",
+    "render_turntable",
+    "render_object_mask",
+    "compositor_apply",
+    "image_segment",
+    "image_edit_by_mask",
+    "scene_verify_mechanical_fit",
+]
+
+
+OPTIONAL_TOOLS = ["blender_run_python"]
+
+
+PUBLIC_RESOURCES = [
+    "blender://capabilities",
+    "blender://skills/{skill_name}",
+    "blender://jobs/{job_id}/manifest",
+    "blender://jobs/{job_id}/artifacts",
+]
+
+
+PUBLIC_PROMPTS = [
+    "create_model_workflow",
+    "product_render_workflow",
+    "segment_edit_workflow",
+    "cryptomatte_workflow",
+    "mechanical_assembly_workflow",
+]
+
+
+def _capabilities(settings: Settings) -> dict[str, Any]:
+    return BASE_CAPABILITIES | {
+        "tools": PUBLIC_TOOLS + (OPTIONAL_TOOLS if settings.unsafe_python else []),
+        "resources": PUBLIC_RESOURCES,
+        "prompts": PUBLIC_PROMPTS,
+        "unsafe_python_enabled": settings.unsafe_python,
+    }
 
 
 def create_server(settings: Settings | None = None, service: BlenderMCPService | None = None) -> FastMCP:
@@ -60,8 +97,13 @@ def create_server(settings: Settings | None = None, service: BlenderMCPService |
 
     @mcp.tool()
     def job_inspect(job_id: str) -> dict[str, Any]:
-        """Inspect job manifest plus Blender objects, materials, camera and lights."""
+        """Inspect job manifest, object occupancy, materials, camera and lights."""
         return service.job_inspect(job_id)
+
+    @mcp.tool()
+    def scene_check_overlap(job_id: str, object_names: list[str] | None = None) -> dict[str, Any]:
+        """Check whether any mesh objects' world-space bounding boxes intersect."""
+        return service.scene_check_overlap(job_id, object_names=object_names)
 
     @mcp.tool()
     def scene_import(job_id: str, path: str) -> dict[str, Any]:
@@ -83,6 +125,38 @@ def create_server(settings: Settings | None = None, service: BlenderMCPService |
     def object_delete(job_id: str, object_name: str) -> dict[str, Any]:
         """Delete a named object from the job scene."""
         return service.object_delete(job_id, object_name)
+
+    @mcp.tool()
+    def object_define_anchor(
+        job_id: str,
+        object_name: str,
+        anchor_name: str,
+        location: list[float] | None = None,
+        normal: list[float] | None = None,
+        up: list[float] | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Define a named local anchor on an object and persist it in the manifest."""
+        return service.object_define_anchor(
+            job_id,
+            object_name,
+            anchor_name,
+            location=location,
+            normal=normal,
+            up=up,
+            **(metadata or {}),
+        )
+
+    @mcp.tool()
+    def object_mate(
+        job_id: str,
+        object_name: str,
+        anchor_name: str,
+        target_object_name: str,
+        target_anchor_name: str,
+    ) -> dict[str, Any]:
+        """Align one object's anchor frame to another object's anchor frame."""
+        return service.object_mate(job_id, object_name, anchor_name, target_object_name, target_anchor_name)
 
     @mcp.tool()
     def material_create_assign(
@@ -158,6 +232,62 @@ def create_server(settings: Settings | None = None, service: BlenderMCPService |
         )
 
     @mcp.tool()
+    def mesh_create_gear(
+        job_id: str,
+        object_name: str = "Gear",
+        module: float = 1.0,
+        teeth_count: int = 16,
+        pressure_angle: float = 20.0,
+        width: float = 0.2,
+        backlash: float = 0.0,
+        location: list[float] | None = None,
+        rotation: list[float] | None = None,
+        scale: list[float] | None = None,
+    ) -> dict[str, Any]:
+        """Create an involute gear with calculated pitch and base radii metadata."""
+        return service.mesh_create_gear(
+            job_id,
+            object_name,
+            module,
+            teeth_count,
+            width,
+            pressure_angle=pressure_angle,
+            backlash=backlash,
+            location=location,
+            rotation=rotation,
+            scale=scale,
+        )
+
+    @mcp.tool()
+    def mesh_create_joint(
+        job_id: str,
+        object_name: str = "Joint",
+        kind: str = "male",
+        diameter: float = 0.01,
+        length: float = 0.02,
+        clearance: float = 0.0,
+        wall_thickness: float = 0.0,
+        segments: int = 32,
+        location: list[float] | None = None,
+        rotation: list[float] | None = None,
+        scale: list[float] | None = None,
+    ) -> dict[str, Any]:
+        """Create a standardized male or female connector with configurable clearance."""
+        return service.mesh_create_joint(
+            job_id,
+            object_name,
+            kind,
+            diameter,
+            length,
+            clearance=clearance,
+            wall_thickness=wall_thickness,
+            segments=segments,
+            location=location,
+            rotation=rotation,
+            scale=scale,
+        )
+
+    @mcp.tool()
     def mesh_modify(
         job_id: str, object_name: str, modifier: str, parameters: dict[str, Any] | None = None, apply: bool = False
     ) -> dict[str, Any]:
@@ -191,6 +321,17 @@ def create_server(settings: Settings | None = None, service: BlenderMCPService |
     def scene_export(job_id: str, filename: str) -> dict[str, str]:
         """Export an artifact as OBJ, STL, glTF/GLB, FBX, USD or available 3MF."""
         return service.scene_export(job_id, filename)
+
+    @mcp.tool()
+    def scene_verify_mechanical_fit(
+        job_id: str,
+        object_names: list[str] | None = None,
+        minimum_clearance_mm: float = 0.0,
+    ) -> dict[str, Any]:
+        """Detect polygon-level interference and report clearance or MTV suggestions."""
+        return service.scene_verify_mechanical_fit(
+            job_id, object_names=object_names, minimum_clearance_mm=minimum_clearance_mm
+        )
 
     @mcp.tool()
     def render_still(
@@ -304,7 +445,7 @@ def create_server(settings: Settings | None = None, service: BlenderMCPService |
 
     @mcp.resource("blender://capabilities")
     def capabilities() -> str:
-        return json.dumps(CAPABILITIES | {"unsafe_python_enabled": settings.unsafe_python}, indent=2)
+        return json.dumps(_capabilities(settings), indent=2)
 
     @mcp.resource("blender://skills/{skill_name}")
     def skill(skill_name: str) -> str:
@@ -325,9 +466,10 @@ def create_server(settings: Settings | None = None, service: BlenderMCPService |
     def create_model_workflow(request: str) -> str:
         return (
             f"Create or modify and export a Blender model for: {request}. "
-            "Begin with job_create, use typed mesh/material/camera tools, render a preview after the scene edit, "
-            "inspect the image before exporting, and verify that objects do not overlap incorrectly and gears or "
-            "other mating parts actually mesh. Never call arbitrary Python unless explicitly approved."
+            "Begin with job_create, define anchors before snapping assemblies, use typed mesh/material/camera tools, "
+            "render a preview after the scene edit, inspect the image before exporting, and verify that objects do "
+            "not overlap incorrectly and gears or other mating parts actually mesh. Never call arbitrary Python "
+            "unless explicitly approved."
         )
 
     @mcp.prompt()
@@ -349,6 +491,15 @@ def create_server(settings: Settings | None = None, service: BlenderMCPService |
         return (
             f"Extract a known rendered scene object/material for: {request}. Inspect the job scene first, "
             "then call render_object_mask with the exact Blender name; use Cryptomatte instead of YOLO."
+        )
+
+    @mcp.prompt()
+    def mechanical_assembly_workflow(request: str) -> str:
+        return (
+            f"Assemble a mechanical scene for: {request}. Create parametrized parts with mesh_create_gear or "
+            "mesh_create_joint, define anchors on mating faces, use object_mate to snap anchors together, then "
+            "run scene_check_overlap and scene_verify_mechanical_fit before exporting. Treat manifest anchors and "
+            "mates as the source of truth for assembly constraints."
         )
 
     return mcp
