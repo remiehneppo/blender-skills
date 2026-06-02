@@ -325,8 +325,9 @@ def create_server(settings: Settings | None = None, service: BlenderMCPService |
     def create_model_workflow(request: str) -> str:
         return (
             f"Create or modify and export a Blender model for: {request}. "
-            "Begin with job_create, use typed mesh/material/camera tools, inspect before exporting, "
-            "and never call arbitrary Python unless explicitly approved."
+            "Begin with job_create, use typed mesh/material/camera tools, render a preview after the scene edit, "
+            "inspect the image before exporting, and verify that objects do not overlap incorrectly and gears or "
+            "other mating parts actually mesh. Never call arbitrary Python unless explicitly approved."
         )
 
     @mcp.prompt()

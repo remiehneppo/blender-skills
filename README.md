@@ -32,6 +32,7 @@ All standard-library modules (`os`, `sys`, `math`, `glob`) are available. Third-
 
 | Add-on | Required by | Install |
 |--------|-------------|---------|
+| **Extra Objects** (`add_mesh_extra_objects`) | gear primitives and other mesh helpers | Blender add-ons bundle; enable via Preferences → Add-ons, `--addons add_mesh_extra_objects`, or set `BLENDER_MCP_BLENDER_ADDONS=add_mesh_extra_objects` |
 | **3MF exporter** (`io_mesh_3mf`) | `blender-3d-export` (3MF format) | Bundled in Blender 3.x; enable via Preferences → Add-ons, or `--addons io_mesh_3mf` |
 | **AMF exporter** | `blender-3d-export` (AMF format) | Third-party add-on — install manually, then `--addons <module_name>` |
 | **Cycles** | `blender-rendering` (photo-realistic renders) | Bundled in Blender; enable via Preferences → Add-ons |
